@@ -1,0 +1,45 @@
+import React, { useState } from 'react';
+import { useEditStore } from '../../state/editStore';
+import { useCatalogStore } from '../../state/catalogStore';
+import { MaskComponentType, MaskComponent, CombineMode, OverlayMode } from '../../types/masks';
+import { SmartSegmentation } from '../../engine/ai/SmartSegmentation';
+import { Slider } from '../common/Slider';
+import { Layers, Plus, Minus, Sparkles, User, Sun, CloudSun, Box, Paintbrush, Maximize2, Circle, Eye, EyeOff, Trash2, Copy, Smile, Scissors, Shirt, Wind, Palette, X } from 'lucide-react';
+
+export const MaskingPanel: React.FC = () => {
+  const {
+    developState,
+    activeMaskGroupId,
+    activeComponentId,
+    overlayConfig,
+    brushSettings,
+    createMaskGroup,
+    addComponentToGroup,
+    updateComponent,
+    deleteComponent,
+    invertComponent,
+    setComponentCombineMode,
+    updateMaskGroup,
+    updateMaskAdjustments,
+    invertMaskGroup,
+    duplicateMaskGroup,
+    deleteMaskGroup,
+    setActiveMaskGroupId,
+    setActiveComponentId,
+    setOverlayConfig,
+    setBrushSettings,
+    commitHistory
+  } = useEditStore();
+
+  const { photos, activePhotoId } = useCatalogStore();
+  const activePhoto = photos.find(p => p.id === activePhotoId) || photos[0];
+
+  const [isNewMenuOpen, setIsNewMenuOpen] = useState(false);
+  const [addSubTargetGroupId, setAddSubTargetGroupId] = useState<{ id: string; mode: CombineMode } | null>(null);
+  const [activeTab, setActiveTab] = useState<'light' | 'color' | 'effects' | 'refine'>('light');
+  const [isProcessingAI, setIsProcessingAI] = useState(false);
+
+  const masks = developState.masks;
+  const activeGroup = masks.find*g => g.id === activeMaskGroupId) || masks[0] || null;
+  const activeComponent = activeGroup?.components.find(c => c.id === activeComponentId) || activeGroup?.components[0] || null;
+

@@ -1,0 +1,33 @@
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { useCatalogStore } from '../../state/catalogStore';
+import { useEditStore } from '../../state/editStore';
+import { RenderPipeline } from '../../engine/gl/Pipeline';
+import { SplitView } from '../common/SplitView';
+import { DEFAULT_DEVELOP_STATE } from '../../types/adjustments';
+import { BrushStroke, Point2D } from '../../types/masks';
+
+export const CanvasViewport: React.FC = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const pipelineRef = useRef<RenderPipeline | null>(null);
+  const imageElementRef = useRef<HTMLImageElement | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const { photos, activePhotoId, setActivePhoto } = useCatalogStore();
+  const {
+    developState,
+    activePresetPreview,
+    isBeforeAfter,
+    splitPosition,
+    setSplitPosition,
+    zoom,
+    pan,
+    setPan,
+    setZoom,
+    activeTool,
+    activeMaskGroupId,
+    activeComponentId,
+    overlayConfig,
+    brushSettings,
+    updateComponent
+  } = useEditStore();
+

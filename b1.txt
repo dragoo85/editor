@@ -1,0 +1,12 @@
+  const { photos, activePhotoId } = useCatalogStore();
+  const activePhoto = photos.find(p => p.id === activePhotoId) || photos[0];
+
+  const [isNewMenuOpen, setIsNewMenuOpen] = useState(false);
+  const [addSubTargetGroupId, setAddSubTargetGroupId] = useState<{{ id: string; mode: CombineMode } | null>(null);
+  const [activeTab, setActiveTab] = useState<'light' | 'color' | 'effects' | 'refine'>('light');
+  const [isProcessingAI, setIsProcessingAI] = useState(false);
+
+  const masks = developState.masks;
+  const activeGroup = masks.find(g => g.id === activeMaskGroupId) || masks[0] || null;
+  const activeComponent = activeGroup?.components.find(c => c.id === activeComponentId) || activeGroup?.components[0] || null;
+

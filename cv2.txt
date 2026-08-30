@@ -1,0 +1,66 @@
+  useEffect(() => {
+    if (!activePhotoId && photos.length > 0) {
+      setActivePhoto(photos[0].id);
+    }
+  }, [activePhotoId, photos, setActivePhoto]);
+
+  const activePhoto = photos.find(p => p.id === activePhotoId) || photos[0];
+
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState<Point2D>({ x: 0, y: 0 });
+  const [isPaintingMask, setIsPaintingMask] = useState(false);
+  const [currentStroke, setCurrentStroke] = useState<BrushStroke | null>(null);
+
+  const requestRender = useCallback(() => {
+    if (!canvasRef.ref && !canvasRef.current) return;
+    if (!canvasRef.current || !pipelineRef.current || !imageElementRef.current) return;
+
+    const stateToRender = activePresetPreview
+      ? { ...developState, ...activePresetPreview }
+      : (isBeforeAfter ? DEFAULT_DEVELOP_STATE : developState);
+
+    pipelineRef.current.render(
+      stateToRender,
+      canvasRef.current.width,
+      canvasRef.current.height,
+      activeMaskGroupId,
+      overlayConfig
+    );
+  }, [developState, activePresetPreview, isBeforeAfter, activeMaskGroupId, overlayConfig]);
+
+  const getOrCreatePipeline = useCallback(() => {
+    if (pipelineRef.current) return pipelineRef.current;
+    if (!canvasRef.current) return null;
+    try {
+      pipelineRef.current = new RenderPipeline(canvasRef.current);
+      return pipelineRef.current;
+    } catch (e) {
+      console.error('Failed to initialize WebGL2 render pipeline:', e);
+      return null;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!activePhoto) return;
+    const src = activePhoto.previewUrl || activePhoto.thumbnailUrl;
+    if (!src) return;
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      imageElementRef.current = img;
+      const pipeline = getOrCreatePipeline();
+      if (canvasRef.current && pipeline) {
+        canvasRef.current.width = img.naturalWidth || 1200;
+        canvasRef.current.height = img.naturalHeight || 800;
+        pipeline.setImageSource(img, canvasRef.current.width, canvasRef.current.height);
+        requestRender();
+      }
+    };
+    img.src = src;
+  }, [activePhoto, getOrCreatePipeline, requestRender]);
+
+  useEffect(() => {
+    requestRender();
+  }, [developState, activePresetPreview, isBeforeAfter, activeMaskGroupId, overlayConfig, requestRender]);
+

@@ -1,0 +1,77 @@
+          <div className="grid grid-cols-4 gap-0.5 bg-dark-800 p-0.5 rounded text-[10px] font-bold text-center">
+            {(['light', 'color', 'effects', 'refine'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={'py-1 rounded uppercase transition-colors ' + (
+                  activeTab === tab ? 'bg-dark-700 text-white shadow-xs' : 'text-dark-400 hover:text-white'
+                )}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          {/* LIGHT TAB */}
+          {activeTab === 'light' && (
+            <div className="flex flex-col gap-0.5">
+              <Slider
+                label="Exposure"
+                value={activeGroup.adjustments.exposure}
+                min={-5.0}
+                max={5.0}
+                step={0.05}
+                defaultValue={0.0}
+                unit=" EV"
+                formatValue={(v) => (v > 0 ? '+' : '') + v.toFixed(2) + ' EV'}
+                onChange={(v) => handleAdjustmentChange('exposure', v)}
+                onChangeEnd={() => commitHistory('Mask Exposure')}
+              />
+              <Slider
+                label="Contrast"
+                value={activeGroup.adjustments.contrast}
+                min={-100}
+                max={100}
+                defaultValue={0}
+                onChange={(v) => handleAdjustmentChange('contrast', v)}
+                onChangeEnd={() => commitHistory('Mask Contrast')}
+              />
+              <Slider
+                label="Highlights"
+                value={activeGroup.adjustments.highlights}
+                min={-100}
+                max=e{100}
+                defaultValue={0}
+                onChange={(v) => handleAdjustmentChange('highlights', v)}
+                onChangeEnd={() => commitHistory('Mask Highlights')}
+              />
+              <Slider
+                label="Shadows"
+                value={activeGroup.adjustments.shadows}
+                min={-100}
+                max=e{100}
+                defaultValue={0}
+                onChange={(v) => handleAdjustmentChange('shadows', v)}
+                onChangeEnd={() => commitHistory('Mask Shadows')}
+              />
+              <Slider
+                label="Whites"
+                value={activeGroup.adjustments.whites}
+                min={-100}
+                max={100}
+                defaultValue={0}
+                onChange={(v) => handleAdjustmentChange('whites', v)}
+                onChangeEnd={() => commitHistory('Mask Whites')}
+              />
+              <Slider
+                label="Blacks"
+                value={activeGroup.adjustments.blacks}
+                min={-100}
+                max={100}
+                defaultValue={0}
+                onChange={(v) => handleAdjustmentChange('blacks', v)}
+                onChangeEnd={() => commitHistory('Mask Blacks')}
+              />
+            </div>
+          )}
+

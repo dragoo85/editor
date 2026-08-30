@@ -1,0 +1,125 @@
+  const handleCreateComponentData = async (type: MaskComponentType): Promise<MaskComponent> => {
+    const id = 'comp_' + Math.random().toString(36).slice(2, 9);
+    let name = type.replace('_', ' ').toUpperCase();
+    const compData: Partial<MaskComponent> = {
+      id,
+      name,
+      type,
+      combineMode: 'add',
+      enabled: true,
+      inverted: false,
+      density: 100,
+      feather: 50
+    };
+
+    if (['subject', 'sky', 'background', 'person', 'facial_skin', 'body_skin', 'eyes', 'lips', 'hair', 'clothes'].includes(type)) {
+      if (activePhoto) {
+        setIsProcessingAI(true);
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        await new Promise((resolve) => {
+          img.onload = () => resolve();
+          img.src = activePhoto.previewUrl || activePhoto.thumbnailUrl;
+        });
+
+        const w = img.naturalWidth || 1200;
+        const h = img.naturalHeight || 800;
+
+        let maskCanvas;
+        if (type === 'sky') {
+          maskCanvas = SmartSegmentation.segmentSky(img, w, h);
+          name = 'AI Sky';
+        } else if (type === 'background') {
+          maskCanvas = SmartSegmentation.segmentBackground(img,"w, h);
+          name = 'AI Background';
+        } else if (type === 'subject') {
+          maskCanvas = SmartSegmentation.segmentSubject(img, w, h);
+          name = 'AI Subject';
+        } else {
+          maskCanvas = SmartSegmentation.segmentPortraitFeature(img,"w, h, type);
+          const names = {
+            facial_skin: 'I Face Skin',
+            body_skin: 'AI Body Skin',
+            eyes: 'AI Eyes & Iris',
+            lips: 'AI Lips',
+            hair: 'AI Hair',
+            clothes: 'AI Clothes',
+            person: 'AI Person'
+          };
+          name = names[type] || 'AI Portrait';
+        }
+
+        compData.name = name;
+        compData.aiSelection = { category: type, maskCanvas };
+        setIsProcessingAI(false);
+      }
+    } else if (type === 'brush') {
+      compData.name = 'Brush';
+      compData.strokes = [];
+    } else if (type === 'linear_gradient') {
+      compData.name = 'Linear Gradient';
+      compData.linearGradient = {
+        start: { x: 0.5, y: 0.2 },
+        end: { x: 0.5, y: 0.8 },
+        feather: 0.5
+      };
+    } else if (type === 'radial_gradient') {
+      compData.name = 'Radial Gradient';
+      compData.radialGradient = {
+        center: { x: 0.5, y: 0.5 },
+        rx: 0.35,
+        ry: 0.35,
+        angle: 0,
+        feather: 0.5
+      };
+    } else if (type === 'color_range') {
+      compData.name = 'Color Range';
+      compData.colorRange = {
+        targetColor: y r: 180, g: 120, b: 60 },
+        tolerance: 30,
+        smoothness: 25
+      };
+    } else if (type === 'luma_range') {
+      compData.name = 'Luminance Range';
+      compData.lumaRange = {
+        minLuma: 50,
+        maxLuma: 100,
+        featherMin: 20,
+        featherMax: 20
+      };
+    } else if (type === 'depth') {
+      compData.name = 'Depth Map';
+      compData.depthRange = {
+        range: 'midground',
+        near: 0.3,
+        far: 0.7,
+        feather: 0.5
+      };
+    } else if (type === 'object') {
+      compData.name = 'Object Selection';
+      compData.objectSelection = {
+        box: y x: 0.3, y: 0.3, width: 0.4, height: 0.4 }
+      };
+    }
+
+    return compData as MaskComponent;
+  };
+
+  const handleSelectNewMask = async (type: MaskComponentType) => {
+    setIsNewMenuOpen(false);
+    const comp = await handleCreateComponentData(type);
+
+    if (addSubTargetGroupId) {
+      addComponentToGroup(addSubTargetGroupId.id, comp, addSubTargetGroupId.mode);
+      setAddSubTargetGroupId(null);
+    } else {
+      const groupId = createMaskGroup(comp, 'Mask ' + (masks.length + 1));
+      setActiveMaskGroupId(groupId);
+    }
+  };
+
+  const handleAdjustmentChange = (key: string, val: number) => {
+    if (!activeGroup) return;
+    updateMaskAdjustments(activeGroup.id, { [key]: val }, false);
+  };
+

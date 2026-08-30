@@ -1,0 +1,195 @@
+  return (
+    <div className="flex flex-col gap-2 p-3 select-none text-xs bg-dark-900 border-t border-dark-800">
+      {/* 1. Header Toolbar */}
+      <div className="flex items-center justify-between border-b border-dark-800 pb-2">
+        <div className="flex items-center gap-2">
+          <Layers className="w-4 h-4 text-rose-500" />
+          <span className="font-bold text-dark-200 uppercase tracking-wide text-[11px]">Masking Workspace</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label className="flex items-center gap-1 cursor-pointer text-[10px] text-dark-300">
+            <input
+              type="checkbox"
+              checked={overlayConfig.showOverlay}
+              onChange={(e) => setOverlayConfig({ showOverlay: e.target.checked })}
+              className="w-3.5 h-3.5 text-rose-500 rounded cursor-pointer"
+            />
+            <span>Overlay (O)</span>
+          </label>
+
+          <select
+            value>{overlayConfig.overlayMode}
+            onChange={(e) => setOverlayConfig({ overlayMode: e.target.value as OverlayMode })}
+            className="bg-dark-800 border border-dark-700 text-dark-300 text-[10px] rounded px-1 py-0.5 outline-none"
+          >
+            <option value="color">Color Overlay</option>
+            <option value="grayscale">Grayscale Mask</option>
+            <option value="white_on_black">White on Black</option>
+            <option value="black_on_white">Black on White</option>
+          </select>
+        </div>
+      </div>
+
+      {/* 2. Create New Mask Button */}
+      <div className="relative">
+        <button
+          onClick={() => {
+            setAddSubTargetGroupId(null);
+            setIsNewMenuOpen(!isNewMenuOpen);
+          }}
+          disabled={isProcessingAI}
+          className="w-full py-1.5 px-3 bg-accent-blue/20 hover:bg-accent-blue/30 text-accent-blue border border-accent-blue/40 rounded flex items-center justify-center gap-2 font-bold text-xs transition-colors shadow-sm disabled:opacity-50"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>{isProcessingAI ? 'Analyzing Image...' : 'Create New Mask'}</span>
+        </button>
+
+        {isNewMenuOpen && (
+          <div className="absolute top-full left-0 right-0 mt-1 bg-dark-850 border border-dark-700 rounded shadow-2xl p-2 z-50 flex flex-col gap-2">
+            <div>
+              <span className="text-[10px] font-bold text-accent-cyan uppercase tracking-wider block mb-1">
+                AI Environment Selections
+              </span>
+              <div className="grid grid-cols-3 gap-1">
+                <button
+                  onClick={() => handleSelectNewMask('subject')}
+                  className="flex items-center gap-1.5 p-1.5 bg-dark-800 hover:bg-dark-700 rounded text-[10px] text-dark-200"
+                >
+                  <Sparkles className="w-3 h-3 text-amber-400" />
+                  <span>Subject</span>
+                </button>
+                <button
+                  onClick={() => handleSelectNewMask('sky')}
+                  className="flex items-center gap-1.5 p-1.5 bg-dark-800 hover:bg-dark-700 rounded text-[10px] text-dark-200"
+                >
+                  <CloudSun className="w-3 h-3 text-cyan-400" />
+                  <span>Sky</span>
+                </button>
+                <button
+                  onClick={() => handleSelectNewMask('background')}
+                  className="flex items-center gap-1.5 p-1.5 bg-dark-800 hover:bg-dark-700 rounded text-[10px] text-dark-200"
+                >
+                  <Sun className="w-3 h-3 text-indigo-400" />
+                  <span>Background</span>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wider block mb-1">
+                AI Portrait & People
+              </span>
+              <div className="grid grid-cols-3 gap-1">
+                <button
+                  onClick={() => handleSelectNewMask('person')}
+                  className="flex items-center gap-1.5 p-1.5 bg-dark-800 hover:bg-dark-700 rounded text-[10px] text-dark-200"
+                >
+                  <User className="w-3 h-3 text-yellow-400" />
+                  <span>Person</span>
+                </button>
+                <button
+                  onClick={() => handleSelectNewMask('facial_skin')}
+                  className="flex items-center gap-1.5 p-1.5 bg-dark-800 hover:bg-dark-700 rounded text-[10px] text-dark-200"
+                >
+                  <Smile className="w-3 h-3 text-amber-400" />
+                  <span>Face Skin</span>
+                </button>
+                <button
+                  onClick={() => handleSelectNewMask('body_skin')}
+                  className="flex items-center gap-1.5 p-1.5 bg-dark-800 hover:bg-dark-700 rounded text-[10px] text-dark-200"
+                >
+                  <User className="w-3 h-3 text-orange-400" />
+                  <span>Body Skin</span>
+                </button>
+                <button
+                  onClick={() => handleSelectNewMask('eyes')}
+                  className="flex items-center gap-1.5 p-1.5 bg-dark-800 hover:bg-dark-700 rounded text-[10px] text-dark-200"
+                >
+                  <Eye className="w-3 h-3 text-cyan-400" />
+                  <span>Eyes</span>
+                </button>
+                <button
+                  onClick={() => handleSelectNewMask('lips')}
+                  className="flex items-center gap-1.5 p-1.5 bg-dark-800 hover:bg-dark-700 rounded text-[10px] text-dark-200"
+                >
+                  <Sparkles className="w-3 h-3 text-rose-400" />
+                  <span>Lips</span>
+                </button>
+                <button
+                  onClick={() => handleSelectNewMask('hair')}
+                  className="flex items-center gap-1.5 p-1.5 bg-dark-800 hover:bg-dark-700 rounded text-[10px] text-dark-200"
+                >
+                  <Scissors className="w-3 h-3 text-purple-400" />
+                  <span>Hair</span>
+                </button>
+                <button
+                  onClick={() => handleSelectNewMask('clothes')}
+                  className="flex items-center gap-1.5 p-1.5 bg-dark-800 hover:bg-dark-700 rounded text-[10px] text-dark-200"
+                >
+                  <Shirt className="w-3 h-3 text-emerald-400" />
+                  <span>Clothes</span>
+                </button>
+                <button
+                  onClick={() => handleSelectNewMask('object')}
+                  className="flex items-center gap-1.5 p-1.5 bg-dark-800 hover:bg-dark-700 rounded text-[10px] text-dark-200"
+                >
+                  <Box className="w-3 h-3 text-blue-400" />
+                  <span>Object</span>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <span className="text-[10px] font-bold text-dark-400 uppercase tracking-wider block mb-1">
+                Classical & Range Masks
+              </span>
+              <div className="grid grid-cols-3 gap-1">
+                <button
+                  onClick={() => handleSelectNewMask('brush')}
+                  className="flex items-center gap-1.5 p-1.5 bg-dark-800 hover:bg-dark-700 rounded text-[10px] text-dark-200"
+                >
+                  <Paintbrush className="w-3 h-3 text-accent-blue" />
+                  <span>Brush</span>
+                </button>
+                <button
+                  onClick={() => handleSelectNewMask('linear_gradient')}
+                  className="flex items-center gap-1.5 p-1.5 bg-dark-800 hover:bg-dark-700 rounded text-[10px] text-dark-200"
+                >
+                  <Maximize2 className="w-3 h-3 text-emerald-400" />
+                  <span>Linear Grad</span>
+                </button>
+                <button
+                  onClick={() => handleSelectNewMask('radial_gradient')}
+                  className="flex items-center gap-1.5 p-1.5 bg-dark-800 hover:bg-dark-700 rounded text-[10px] text-dark-200"
+                >
+                  <Circle className="w-3 h-3 text-amber-400" />
+                  <span>Radial Grad</span>
+                </button>
+                <button
+                  onClick={() => handleSelectNewMask('color_range')}
+                  className="flex items-center gap-1.5 p-1.5 bg-dark-800 hover:bg-dark-700 rounded text-[10px] text-dark-200"
+                >
+                  <Palette className="w-3 h-3 text-rose-400" />
+                  <span>Color Range</span>
+                </button>
+                <button
+                  onClick={() => handleSelectNewMask('luma_range')}
+                  className="flex items-center gap-1.5 p-1.5 bg-dark-800 hover:bg-dark-700 rounded text-[10px] text-dark-200"
+                >
+                  <Sun className="w-3 h-3 text-yellow-400" />
+                  <span>Luma Range</span>
+                </button>
+                <button
+                  onClick={() => handleSelectNewMask('depth')}
+                  className="flex items-center gap-1.5 p-1.5 bg-dark-800 hover:bg-dark-700 rounded text-[10px] text-dark-200"
+                >
+                  <Wind className="w-3 h-3 text-cyan-400" />
+                  <span>Depth Range</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
