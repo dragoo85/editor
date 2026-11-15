@@ -6,8 +6,20 @@ import type { DriveItem, DriveListing, StorageUsage } from "../types";
  * (start / status / chunk / finalize / cancel) and streamed downloads.
  */
 
-const DRIVE_API = "https://www.googleapis.com/drive/v3";
-const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
+const DEFAULT_DRIVE_API = "https://www.googleapis.com/drive/v3";
+const DEFAULT_UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
+
+/**
+ * Endpoint overrides. Used by the protocol tests against a local fake Drive and
+ * by deployments that must route Google traffic through a proxy.
+ */
+function driveApi(): string {
+  return process.env.GOLIATH_DRIVE_API_BASE ?? DEFAULT_DRIVE_API;
+}
+
+function uploadApi(): string {
+  return process.env.GOLIATH_DRIVE_UPLOAD_BASE ?? DEFAULT_UPLOAD_API;
+}
 
 export const GOLIATH_ROOT_NAME = "GOLIATH";
 const ROOT_MARKER_KEY = "goliathRoot";
@@ -123,7 +135,7 @@ export async function findGoliathRoot(accessToken: string): Promise<string | nul
     `properties has { key='${ROOT_MARKER_KEY}' and value='${ROOT_MARKER_VALUE}' }`,
   ].join(" and ");
 
-  const url = `${DRIVE_API}/files?q=${encodeURIComponent(query)}&fields=files(id,name)&pageSize=1`;
+  const url = `${driveApi()}/files?q=${encodeURIComponent(query)}&fields=files(id,name)&pageSize=1`;
   const response = await driveFetch(accessTokenValue, url);
   const payload = (await response.json()) as { files?: { id: string }[] };
   return payload.files?.[0]?.id ?? null;
@@ -134,7 +146,7 @@ export async function ensureGoliathRoot(accessToken: string): Promise<string> {
   if (existing) return existing;
 
   const accessTokenValue = ensureAccessToken(accessToken);
-  const response = await driveFetch(accessTokenValue, `${DRIVE_API}/files`, {
+  const response = await driveFetch(accessTokenValue, `${driveApi()}/files`, {
     method: "POST",
     body: JSON.stringify({
       name: GOLIATH_ROOT_NAME,
@@ -169,7 +181,7 @@ export async function listChildren({
   if (folderId) {
     clauses.push(`'${folderId.replace(/'/g, "")}' in parents`);
   }
-  const url = `${DRIVE_API}/files?q=${encodeURIComponent(clauses.join(" and "))}` +
+  const url = `${driveApi()}/files?q=${encodeURIComponent(clauses.join(" and "))}` +
     `&fields=nextPageToken,files(${FILE_FIELDS})` +
     `&pageSize=${Math.min(200, Math.max(1, pageSize))}` +
     `&orderBy=${encodeURIComponent(orderBy)}` +
@@ -206,7 +218,7 @@ export async function searchDrive({
   const clauses = ["trashed=false", `fullText contains '${safe}'`];
   if (folderId) clauses.push(`'${folderId}' in parents`);
 
-  const url = `${DRIVE_API}/files?q=${encodeURIComponent(clauses.join(" and "))}` +
+  const url = `${driveApi()}/files?q=${encodeURIComponent(clauses.join(" and "))}` +
     `&fields=nextPageToken,files(${FILE_FIELDS})` +
     `&pageSize=${Math.min(100, Math.max(1, pageSize))}` +
     `&orderBy=modifiedTime desc` +
@@ -233,7 +245,7 @@ export async function createFolder({
   parentId: string;
 }): Promise<DriveItem> {
   const token = ensureAccessToken(accessToken);
-  const response = await driveFetch(token, `${DRIVE_API}/files`, {
+  const response = await driveFetch(token, `${driveApi()}/files`, {
     method: "POST",
     body: JSON.stringify({
       name,
@@ -255,7 +267,7 @@ export async function renameFile({
   name: string;
 }): Promise<DriveItem> {
   const token = ensureAccessToken(accessToken);
-  const response = await driveFetch(token, `${DRIVE_API}/files/${encodeURIComponent(fileId)}`, {
+  const response = await driveFetch(token, `${driveApi()}/files/${encodeURIComponent(fileId)}`, {
     method: "PATCH",
     body: JSON.stringify({ name }),
   });
@@ -274,7 +286,7 @@ export async function moveFile({
   removeParents?: string | null;
 }): Promise<DriveItem> {
   const token = ensureAccessToken(accessToken);
-  let url = `${DRIVE_API}/files/${encodeURIComponent(fileId)}?addParents=${encodeURIComponent(addParents)}`;
+  let url = `${driveApi()}/files/${encodeURIComponent(fileId)}?addParents=${encodeURIComponent(addParents)}`;
   if (removeParents) url += `&removeParents=${encodeURIComponent(removeParents)}`;
   const response = await driveFetch(token, url, { method: "PATCH", body: JSON.stringify({}) });
   return toItem((await response.json()) as DriveRawFile);
@@ -292,7 +304,7 @@ export async function copyFile({
   parentId: string;
 }): Promise<DriveItem> {
   const token = ensureAccessToken(accessToken);
-  const response = await driveFetch(token, `${DRIVE_API}/files/${encodeURIComponent(fileId)}/copy`, {
+  const response = await driveFetch(token, `${driveApi()}/files/${encodeURIComponent(fileId)}/copy`, {
     method: "POST",
     body: JSON.stringify({ name, parents: [parentId] }),
   });
@@ -301,7 +313,7 @@ export async function copyFile({
 
 export async function trashFile(accessToken: string, fileId: string): Promise<void> {
   const token = ensureAccessToken(accessToken);
-  await driveFetch(token, `${DRIVE_API}/files/${encodeURIComponent(fileId)}`, {
+  await driveFetch(token, `${driveApi()}/files/${encodeURIComponent(fileId)}`, {
     method: "PATCH",
     body: JSON.stringify({ trashed: true }),
   });
@@ -317,7 +329,7 @@ export async function setStarred({
   starred: boolean;
 }): Promise<void> {
   const token = ensureAccessToken(accessToken);
-  await driveFetch(token, `${DRIVE_API}/files/${encodeURIComponent(fileId)}`, {
+  await driveFetch(token, `${driveApi()}/files/${encodeURIComponent(fileId)}`, {
     method: "PATCH",
     body: JSON.stringify({ starred }),
   });
@@ -327,7 +339,7 @@ export async function setStarred({
 
 export async function getStorageUsage(accessToken: string): Promise<StorageUsage> {
   const token = ensureAccessToken(accessToken);
-  const url = `${DRIVE_API}/about?fields=storageQuota(limit,usage,usageInTrash)`;
+  const url = `${driveApi()}/about?fields=storageQuota(limit,usage,usageInTrash)`;
   const response = await driveFetch(token, url);
   const payload = (await response.json()) as {
     storageQuota?: { limit?: string; usage?: string; usageInTrash?: string };
@@ -361,7 +373,7 @@ export async function createResumableSession({
   parentId: string;
 }): Promise<ResumableSession> {
   const token = ensureAccessToken(accessToken);
-  const url = `${UPLOAD_API}/files?uploadType=resumable&fields=id,name,mimeType,size`;
+  const url = `${uploadApi()}/files?uploadType=resumable&fields=id,name,mimeType,size`;
 
   const headers = new Headers();
   headers.set("Authorization", `Bearer ${token}`);
@@ -512,7 +524,7 @@ export async function openDownload({
   const headers = new Headers({ Authorization: `Bearer ${token}` });
   if (range) headers.set("Range", range);
 
-  const metaUrl = `${DRIVE_API}/files/${encodeURIComponent(fileId)}?fields=id,name,mimeType,size`;
+  const metaUrl = `${driveApi()}/files/${encodeURIComponent(fileId)}?fields=id,name,mimeType,size`;
   const metaResponse = await driveFetch(token, metaUrl);
   const meta = (await metaResponse.json()) as {
     name?: string;
@@ -522,7 +534,7 @@ export async function openDownload({
 
   const response = await driveFetch(
     token,
-    `${DRIVE_API}/files/${encodeURIComponent(fileId)}?alt=media`,
+    `${driveApi()}/files/${encodeURIComponent(fileId)}?alt=media`,
     { headers },
   );
 
@@ -555,7 +567,7 @@ export async function getMetadata(
   fileId: string,
 ): Promise<DriveItem> {
   const token = ensureAccessToken(accessToken);
-  const url = `${DRIVE_API}/files/${encodeURIComponent(fileId)}?fields=${FILE_FIELDS}`;
+  const url = `${driveApi()}/files/${encodeURIComponent(fileId)}?fields=${FILE_FIELDS}`;
   const response = await driveFetch(token, url);
   return toItem((await response.json()) as DriveRawFile);
 }

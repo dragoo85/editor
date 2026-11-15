@@ -45,7 +45,21 @@ Then sign in at `/login`, open `/account` and connect Google Drive.
 | `npm run build`     | Production build                         |
 | `npm start`         | Serve the production build               |
 | `npm run typecheck` | `tsc --noEmit`                           |
-| `npm test`          | vitest unit tests                        |
+| `npm test`          | vitest (unit + Drive protocol + API contracts) |
+| `npm run verify:sql`| Parse migrations with the PostgreSQL grammar |
+| `npm run verify`    | typecheck + tests + SQL validation       |
+| `npm run env:generate` | Write `.env.local` with generated local secrets |
+| `npm run env:check` | Report which credentials are still missing |
+
+## First run
+
+```bash
+cd goliath
+npm install
+node scripts/generate-env.mjs     # real encryption key, blanks for account creds
+node scripts/check-env.mjs        # tells you exactly what is missing
+npm run dev
+```
 
 ## Required environment
 

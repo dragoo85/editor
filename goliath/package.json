@@ -9,7 +9,11 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "verify:sql": "node scripts/validate-sql.mjs",
+    "env:generate": "node scripts/generate-env.mjs",
+    "env:check": "node scripts/check-env.mjs",
+    "verify": "npm run typecheck && npm run test && npm run verify:sql"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -30,7 +34,8 @@
     "postcss": "^8.5.2",
     "tailwindcss": "^3.4.19",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "libpg-query": "^16.0.0"
   },
   "engines": {
     "node": ">=20"

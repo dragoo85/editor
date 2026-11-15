@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "./supabase/server";
 import { isSupabaseConfigured } from "./env";
+import { ValidationError } from "./validation";
 
 export function jsonError(status: number, message: string, extra?: Record<string, unknown>) {
   return NextResponse.json({ error: message, ...extra }, { status });
@@ -18,6 +19,10 @@ export async function requireSession(): Promise<{ userId: string } | NextRespons
 }
 
 export function handleError(error: unknown): NextResponse {
+  if (error instanceof ValidationError) {
+    return jsonError(400, error.message);
+  }
+
   const status =
     typeof error === "object" && error !== null && "status" in error
       ? Number((error as { status: unknown }).status) || 500

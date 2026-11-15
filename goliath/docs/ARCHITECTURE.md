@@ -24,6 +24,17 @@ Next.js App Router ── middleware (session refresh + route guard)
 implements the v3 surface with `fetch`, which keeps the audit surface small and lets upload chunks
 flow through the same request path as metadata calls.
 
+Two environment overrides make that client verifiable and proxy-friendly:
+
+| Variable                     | Default                              | Purpose                              |
+| ---------------------------- | ------------------------------------ | ------------------------------------ |
+| `GOLIATH_DRIVE_API_BASE`     | `https://www.googleapis.com/drive/v3`| Route metadata calls through a proxy |
+| `GOLIATH_DRIVE_UPLOAD_BASE`  | `https://www.googleapis.com/upload/drive/v3` | Same for resumable uploads |
+
+The test suite points both at a fake Drive that implements the real wire format
+(`tests/fake-drive.ts`), which is how resumable offsets, `308` handling and retry semantics are
+verified without a Google account.
+
 ## Storage model
 
 Drive is the source of truth for bytes. PostgreSQL stores **metadata and state only**:

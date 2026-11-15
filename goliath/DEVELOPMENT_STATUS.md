@@ -6,11 +6,57 @@ Last updated: 2026-11-15 · Branch: session workspace · Runtime verified with N
 
 | Check                    | Result                                                     |
 | ------------------------ | ---------------------------------------------------------- |
-| `npx tsc --noEmit`       | PASS (0 errors)                                            |
-| `npx next build`         | PASS (all routes compiled, middleware 95.3 kB)             |
-| `npx vitest run`         | PASS (5 files, 24 tests)                                   |
-| Dependency install       | PASS (Next 15.5.29, React 19.1.10, Tailwind 3.4.19)        |
+| `npm run typecheck`      | PASS (0 errors)                                            |
+| `npm run build`          | PASS (all routes compiled, middleware 65.9 kB)             |
+| `npm run test`           | PASS (7 files, 43 tests)                                   |
+| `npm run verify:sql`     | PASS (74 statements parsed with the real PostgreSQL grammar) |
 | Dev-server smoke test    | PASS — `/api/health` 200, `/login` 200, `/onboarding` 200; unauthenticated `/dashboard` and `/files` → 307 `/login`; `/api/drive/*` and `/api/google/*` → 401/503 with a real error body instead of a crash |
+| `npm run env:generate`   | PASS — writes `.env.local` with a real 32-byte encryption key and blanks for account credentials |
+| `npm run env:check`      | PASS — reports exactly which account credentials are still missing |
+
+### What is verified by the test suite
+
+- **Drive wire protocol** (`tests/drive.protocol.test.ts`, 11 tests) against a fake Drive that
+  implements Google's real semantics: resumable session creation, `308` + `Range` chunk progress,
+  offset validation, finalising chunk, resume after a transient `503` with no committed bytes,
+  folder-marker root creation, pagination, full-text search, rename/move/copy/star/trash, quota,
+  ranged download, and `DriveError` status mapping.
+- **OAuth helpers**: PKCE S256 challenge format, consent URL parameters, scope parsing, id-token decoding.
+- **Token encryption**: round-trip, ciphertext uniqueness, tamper rejection, passphrase derivation.
+- **API contracts** (`tests/api.contract.test.ts`, 8 tests): unknown action → 400, missing
+  confirmation → 400, unsafe drive id → 400, unauthenticated → 401, missing message → 400,
+  unconfigured AI → `503 ai_not_configured`.
+- **Transfer math, validators, rate limiter.**
+
+### Bugs found and fixed while verifying
+
+| Bug                                                        | Fix                                                        |
+| ---------------------------------------------------------- | ---------------------------------------------------------- |
+| Validation failures returned `500` instead of `400`        | `handleError` now maps `ValidationError` → 400              |
+| PKCE challenge was hex SHA-256 (Google expects base64url)  | `sha256Base64Url` used for the challenge                    |
+| `sort=modifiedTime` referenced a camelCase column          | Sort keys mapped to snake_case columns                      |
+| Zero-byte uploads could never finalise                     | Empty finalising chunk allowed when the file is empty       |
+| Unconfigured deployment crashed `/dashboard`               | `getSessionUser` returns null; API returns `503 not_configured` |
+
+## What was automated for you (no action needed)
+
+- `goliath/.env.local` generated with a real `GOLIATH_TOKEN_ENCRYPTION_KEY` (chmod 600, gitignored).
+- `scripts/generate-env.mjs` regenerates local secrets; `scripts/check-env.mjs` reports what is missing.
+- `scripts/validate-sql.mjs` parses every migration with the PostgreSQL grammar (`libpg-query`).
+- `npm run verify` = typecheck + tests + SQL validation.
+- Drive endpoint overrides (`GOLIATH_DRIVE_API_BASE`, `GOLIATH_DRIVE_UPLOAD_BASE`) enable the
+  protocol tests and any proxy deployment.
+
+## Remaining blockers (require your accounts only)
+
+| Blocker                          | Why it cannot be automated here                                  |
+| -------------------------------- | ---------------------------------------------------------------- |
+| Supabase project + schema apply  | Needs your Supabase account; no Docker/Postgres in this sandbox  |
+| Google OAuth client              | Needs your Google Cloud project and consent screen               |
+| Real upload/download round-trip  | Needs a connected Drive account                                  |
+| Gemini / Ollama inference        | Needs an API key or a running local model                        |
+| `cargo build` / `tauri build`    | No Rust toolchain in the container                               |
+| `expo start` on a device         | Expo packages declared but not installed in this sandbox         |
 
 Unconfigured deployments degrade explicitly: pages redirect to `/login`, API routes return
 `503 {"code":"not_configured"}` rather than throwing, and the UI shows which env vars are missing.

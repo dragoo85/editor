@@ -148,7 +148,14 @@ export async function listFilesPage(
   }
 
   const ascending = opts.sort.endsWith(":asc");
-  const column = opts.sort.split(":")[0];
+  // UI sort keys are camelCase; the table columns are snake_case.
+  const columnMap: Record<string, string> = {
+    name: "name",
+    size: "size",
+    modifiedTime: "modified_time",
+    createdTime: "created_time",
+  };
+  const column = columnMap[opts.sort.split(":")[0]] ?? "name";
 
   const { data, error, count } = await query
     .order("is_folder", { ascending: false })
