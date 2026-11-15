@@ -1,0 +1,31 @@
+# GOLIATH — web (Next.js)
+node_modules/
+.next/
+out/
+build/
+next-env.d.ts
+*.tsbuildinfo
+
+# Desktop (Tauri)
+goliath/tauri/target/
+goliath/tauri/gen/
+
+# Mobile (Expo)
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+goliath-token-encryption*.txt
+
+# Logs / OS
+npm-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+coverage/

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>GOLIATH</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #07080a;
+        color: #c2c8d2;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        display: grid;
+        place-items: center;
+      }
+      .box {
+        text-align: center;
+      }
+      .spinner {
+        width: 28px;
+        height: 28px;
+        margin: 0 auto 16px;
+        border: 2px solid #272c35;
+        border-top-color: #38a8ff;
+        border-radius: 50%;
+        animation: spin 900ms linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      code {
+        color: #7cc4ff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <div class="spinner"></div>
+      <p>Connecting to the GOLIATH workspace…</p>
+      <p style="font-size: 12px; color: #737b88">
+        Start the web app (<code>npm run dev</code>) or set <code>GOLIATH_APP_URL</code>.
+      </p>
+    </div>
+    <script>
+      (function () {
+        var target = window.GOLIATH_APP_URL || "http://localhost:3000";
+        // The Tauri shell reads GOLIATH_APP_URL and injects it before this runs.
+        try {
+          if (window.__TAURI__ && window.__TAURI__.invoke) {
+            window.__TAURI__.invoke("resolve_app_url").then(function (url) {
+              if (url) window.location.replace(url);
+            });
+            return;
+          }
+        } catch (error) {
+          /* fall through to the default */
+        }
+        window.location.replace(target);
+      })();
+    </script>
+  </body>
+</html>

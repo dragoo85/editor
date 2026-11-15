@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Inter", "Segoe UI Variable", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue",
+    Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, "Cascadia Mono", Menlo, monospace;
+  --graphite-950: #07080a;
+  --electric: #38a8ff;
+}
+
+@layer base {
+  * {
+    @apply border-graphite-700;
+  }
+
+  html,
+  body {
+    @apply h-full;
+  }
+
+  body {
+    @apply bg-graphite-950 text-silver-200 antialiased;
+    background-image: radial-gradient(
+        120% 80% at 10% -10%,
+        rgba(10, 132, 255, 0.12) 0%,
+        rgba(0, 0, 0, 0) 55%
+      ),
+      radial-gradient(90% 60% at 100% 0%, rgba(56, 168, 255, 0.06) 0%, rgba(0, 0, 0, 0) 60%);
+    background-attachment: fixed;
+    font-feature-settings: "cv11", "ss01";
+    font-variant-ligatures: contextual;
+  }
+
+  ::selection {
+    @apply bg-electric-500/30 text-white;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #363c47 transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-graphite-600;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    @apply bg-graphite-500;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-electric-500/70 ring-offset-2 ring-offset-graphite-950;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-2xl border border-white/5 bg-graphite-900/70 shadow-panel backdrop-blur-sm;
+  }
+
+  .panel-header {
+    @apply flex items-center justify-between gap-3 border-b border-white/5 px-5 py-4;
+  }
+
+  .metal-text {
+    @apply bg-gradient-to-b from-white via-silver-200 to-silver-400 bg-clip-text text-transparent;
+  }
+
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-white/10
+      px-3.5 py-2 text-sm font-medium text-silver-200 transition-all duration-150
+      hover:border-white/20 hover:bg-white/5 hover:text-white
+      disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:border-white/10 disabled:hover:bg-transparent;
+  }
+
+  .btn-primary {
+    @apply border-electric-500/50 bg-electric-500/15 text-electric-300
+      hover:border-electric-400/70 hover:bg-electric-500/25 hover:text-white;
+  }
+
+  .btn-danger {
+    @apply border-red-500/40 bg-red-500/10 text-red-300 hover:border-red-400/70 hover:bg-red-500/20 hover:text-red-200;
+  }
+
+  .btn-ghost {
+    @apply border-transparent bg-transparent text-silver-400 hover:bg-white/5 hover:text-white;
+  }
+
+  .btn-icon {
+    @apply h-9 w-9 rounded-lg p-0;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-white/10 bg-graphite-950/60 px-3.5 py-2 text-sm text-silver-100
+      placeholder:text-silver-500/70 transition-colors
+      focus:border-electric-500/60 focus:outline-none focus:ring-2 focus:ring-electric-500/25;
+  }
+
+  .label {
+    @apply mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.14em] text-silver-500;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1
+      text-[11px] font-medium uppercase tracking-[0.1em] text-silver-400;
+  }
+
+  .skeleton {
+    @apply animate-pulse rounded-lg bg-graphite-700/60;
+  }
+
+  .grid-file-card {
+    @apply relative flex flex-col overflow-hidden rounded-xl border border-white/5 bg-graphite-850/80
+      transition-all duration-200 hover:-translate-y-0.5 hover:border-electric-500/40 hover:shadow-accent;
+  }
+
+  .grid-file-card:hover .card-actions {
+    @apply opacity-100;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

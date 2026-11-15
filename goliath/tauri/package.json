@@ -1,0 +1,15 @@
+{
+  "name": "goliath-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Tauri shell for the GOLIATH web app",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "web:dev": "npm --prefix .. run dev -- --port 3000",
+    "web:build": "npm --prefix .. run build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.1.0"
+  }
+}
